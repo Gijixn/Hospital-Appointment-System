@@ -4,14 +4,16 @@
 
 int main()
 {
-    FILE* dataptr; //opening file
-
-    dataptr = fopen("data.txt", "r+");
-
+    FILE* dataptr; //opening file - if file doesn't exist, it will create a new one
+    dataptr = fopen("patientRecords.txt", "r+");
     if (dataptr == NULL)
     {
-        printf("File does not exist");
-        return 0;
+        fopen("patientRecords.txt", "w+");
+        if (dataptr == NULL)
+        {
+            printf("ERROR : File cannot be accessed\n");
+            return 1;
+        }
     }
 
     typedef struct
