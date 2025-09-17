@@ -4,7 +4,7 @@
 
 int main()
 {
-    FILE* dataptr;
+    FILE* dataptr; //opening file
 
     dataptr = fopen("data.txt", "r+");
 
