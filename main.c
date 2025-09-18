@@ -4,12 +4,12 @@
 
 int main()
 {
-    FILE* dataptr; //opening file - if file doesn't exist, it will create a new one
-    dataptr = fopen("patientRecords.txt", "r+");
-    if (dataptr == NULL)
+    FILE* data; //opening file - if file doesn't exist, it will create a new one
+    data = fopen("patientRecords.bin", "r+");
+    if (data == NULL)
     {
-        fopen("patientRecords.txt", "w+");
-        if (dataptr == NULL)
+        fopen("patientRecords.bin", "w+");
+        if (data == NULL)
         {
             printf("ERROR : File cannot be accessed\n");
             return 1;
@@ -18,22 +18,14 @@ int main()
 
     typedef struct
     {
+        int ordinal_ID;
         int Pat_ID;
-        int Date;
+        int date;
+        char Pat_Type;
         char Pat_Name[50];
     } User;
-
-    User inpatient[100];
-    User outpatient[100];
-    char test[50];
-    int inpatient_Registered = 0;
-    int outpatient_Registered = 0;
+    User Patient;
     
-    int unique_IDGen()
-    {
-        // store and check for existing id
-        // generate 1000000 + rand() % 9000001;
-    }
     int menu()
     {
         int choice;
@@ -45,24 +37,42 @@ int main()
         return choice;
     }
 
-    int patient_Registration(int patient_Type)
+    int last_ID(data)
     {
-        switch(patient_Type)
+        User buffer;
+        if (ftell(data) == 0)
         {
-            case 1:
-            printf("Enter your name: ");
-            scanf("%s", test);
-            fputs(test, dataptr);
-            fputs("\n", dataptr);
-            break;
-            case 2:
-            //outpatient store
-            break;
-            default:
-            printf("Invalid Input in patient_Registration");
-            break;
+            printf("No content within the file.\n");
+            return 1;
+        } else
+        {
+            fseek(data, -sizeof(User), SEEK_END);
+            fread(buffer, sizeof(User), 1, data);
+            return buffer.ordinal_ID;
+
         }
     }
+
+    int patient_Order = last_ID(data);
+
+        int unique_IDGen()
+    {
+        // loop through all unique ids while (fread(   ))
+    }
+
+    
+    int patient_Registration(int patient_Type)
+    {
+        if (patient_Type == 1)
+        {
+            printf("What is your name?: ");
+            scanf("%[^\n]", Patient.name);
+
+
+            
+        }
+    }
+
 
     while(1)
     {
@@ -75,7 +85,7 @@ int main()
     }
 
     
-    fclose(dataptr);
+    fclose(data);
         printf("The file is now closed.\n");
 
 }
