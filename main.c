@@ -502,6 +502,9 @@ void generateAndPrintBill(User *u)
             discount, hmoCoverage, amountDue);
 
     // Print final receipt
+
+
+    
     printf("\n================================================\n");
     printf("              Makulay General Hospital\n");
     printf("                 Lipa City, Batangas\n");
@@ -584,6 +587,65 @@ int menu()
         scanf("%d", &choice);
         return choice;
     }
+ void personalDetails();
+ {
+ void printLine() {
+    printf("+--------------------------------------------------------------------------------------------------------------+\n");
+}
+
+void printHeader() {
+    printLine();
+    printf("| %-5s | %-10s | %-15s | %-3s | %-10s | %-6s | %-12s | %-15s | %-10s | %-12s | %-10s | %-15s | %-10s |\n",
+           "ID", "Date", "Name", "Age", "DOB", "Sex", "Contact", "Department", "HMO", "Doctor", "Symptom", "Address", "Sr/PWD");
+    printLine();
+}
+
+int main() {
+    struct Patient p[MAX];
+    int n, i;
+
+    printf("Enter number of patients (max %d): ", MAX);
+    scanf("%d", &n);
+    getchar(); // clear buffer
+
+    for (i = 0; i < n; i++) {
+        printf("\n--- Enter details for Patient %d ---\n", i + 1);
+        printf("Patient ID: ");
+        scanf("%d", &p[i].patID); getchar();
+        printf("Date (MM/DD/YYYY): ");
+        fgets(p[i].date, sizeof(p[i].date), stdin); strtok(p[i].date, "\n");
+        printf("Name: ");
+        fgets(p[i].name, sizeof(p[i].name), stdin); strtok(p[i].name, "\n");
+        printf("Age: ");
+        scanf("%d", &p[i].age); getchar();
+        printf("Date of Birth (MM/DD/YYYY): ");
+        fgets(p[i].dob, sizeof(p[i].dob), stdin); strtok(p[i].dob, "\n");
+        printf("Sex: ");
+        fgets(p[i].sex, sizeof(p[i].sex), stdin); strtok(p[i].sex, "\n");
+        printf("Contact Number: ");
+        fgets(p[i].contact, sizeof(p[i].contact), stdin); strtok(p[i].contact, "\n");
+        printf("Full Address: ");
+        fgets(p[i].address, sizeof(p[i].address), stdin); strtok(p[i].address, "\n");
+        printf("Symptoms: ");
+        fgets(p[i].symptoms, sizeof(p[i].symptoms), stdin); strtok(p[i].symptoms, "\n");
+        printf("Department: ");
+        fgets(p[i].department, sizeof(p[i].department), stdin); strtok(p[i].department, "\n");
+        printf("HMO: ");
+        fgets(p[i].hmo, sizeof(p[i].hmo), stdin); strtok(p[i].hmo, "\n");
+        printf("Assigned Doctor: ");
+        fgets(p[i].doctor, sizeof(p[i].doctor), stdin); strtok(p[i].doctor, "\n");
+        printf("Senior or PWD (Yes/No): ");
+        fgets(p[i].seniorOrPwd, sizeof(p[i].seniorOrPwd), stdin); strtok(p[i].seniorOrPwd, "\n");
+    }
+
+    printf("\n\n================= INPATIENT RECORD TABLE =================\n");
+    printHeader();
+    for (i = 0; i < n; i++) {
+        printf("| %-5d | %-10s | %-15s | %-3d | %-10s | %-6s | %-12s | %-15s | %-10s | %-12s | %-10s | %-15s | %-10s |\n",
+               p[i].patID, p[i].date, p[i].name, p[i].age, p[i].dob, p[i].sex, p[i].contact,
+               p[i].department, p[i].hmo, p[i].doctor, p[i].symptoms, p[i].address, p[i].seniorOrPwd);
+        printLine(); 
+ }
 
 int main()
 {
