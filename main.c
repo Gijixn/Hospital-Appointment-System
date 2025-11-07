@@ -4,6 +4,68 @@
 #include <stdbool.h>
 #include <time.h>
 
+void menu();
+
+int main() {
+    menu();
+    return 0;
+}
+
+void menu()
+{
+    int choice, type;
+
+    do {
+        printf("\n===== MAIN MENU =====\n");
+        printf("1. Registration\n");
+        printf("2. View\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1:
+                printf("\n--- REGISTRATION ---\n");
+                printf("1. Inpatient\n");
+                printf("2. Outpatient\n");
+                printf("Enter your choice: ");
+                scanf("%d", &type);
+
+                if(type == 1)
+                    printf("You selected: Registration - Inpatient\n");
+                else if(type == 2)
+                    printf("You selected: Registration - Outpatient\n");
+                else
+                    printf("Invalid choice for Registration.\n");
+                break;
+
+            case 2:
+                printf("\n--- VIEW ---\n");
+                printf("1. Inpatient\n");
+                printf("2. Outpatient\n");
+                printf("Enter your choice: ");
+                scanf("%d", &type);
+
+                if(type == 1)
+                    printf("You selected: View - Inpatient\n");
+                else if(type == 2)
+                    printf("You selected: View - Outpatient\n");
+                else
+                    printf("Invalid choice for View.\n");
+                break;
+
+            case 3:
+                printf("\nExiting program...\n");
+                break;
+
+            default:
+                printf("\nInvalid choice. Please try again.\n");
+        }
+
+    } while(choice != 3);
+}
+
 #define MAX_SYMPTOMS 10
 
 typedef struct
