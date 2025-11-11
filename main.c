@@ -110,6 +110,7 @@ typedef struct
         billing patBilling;
         room hospitalRooms;
         char isSeniorOrPwd[5];
+        char patDaysofStay[5];
     } User;
 
 
@@ -161,21 +162,31 @@ void getRandomDepartment(char *departmentName, char *doctorName)
 
 void getRandomLabTestsString(char *result, int *totalPrice) {
     int numTests = sizeof(tests) / sizeof(tests[0]);
+    int used[20] = {0};
     *totalPrice = 0;
     result[0] = '\0';
 
     strcat(result, "Health Consultation");
     *totalPrice += tests[numTests - 1].prices;
+    used[numTests - 1] = 1; 
 
     int additional = rand() % 3;
 
     for (int i = 0; i < additional; i++) {
-        int idx = rand() % (numTests - 1);
+        int idx;
+
+        do {
+            idx = rand() % (numTests - 1);
+        } while (used[idx]);
+
+        used[idx] = 1; 
+
         strcat(result, "+");
         strcat(result, tests[idx].labTests);
         *totalPrice += tests[idx].prices;
     }
 }
+
 
 const char *currentDate(void)
 {
@@ -206,26 +217,7 @@ bool patWriteData(User data, char *fileName)
         if (patRecords == NULL) return false;
 
     }
-    
-       if (strcmp(fileName, "inpatientBill") == 0)
-    {
-        patRecords = fopen("inpatientBills.bin", "ab");
-        structType = sizeof(billing);
-        
-        if (patRecords == NULL) return false;
 
-    }
-
-       if (strcmp(fileName, "outpatientBill") == 0)
-    {
-        patRecords = fopen("outpatientBills.bin", "ab");
-        structType = sizeof(billing);
-        
-        if (patRecords == NULL) return false;
-
-    }
-
-    
     else {
         printf("Invalid Choice\n");
         return false;
@@ -259,25 +251,6 @@ User *patReadData(char *fileName)
         if (patRecords == NULL) return NULL;
 
     }
-    
-       if (strcmp(fileName, "inpatientBill") == 0)
-    {
-        patRecords = fopen("inpatientBills.bin", "ab");
-        structType = sizeof(billing);
-        
-        if (patRecords == NULL) return NULL;
-
-    }
-
-       if (strcmp(fileName, "outpatientBill") == 0)
-    {
-        patRecords = fopen("outpatientBills.bin", "ab");
-        structType = sizeof(billing);
-        
-        if (patRecords == NULL) return NULL;
-
-    }
-
     
     else {
         printf("Invalid Choice\n");
@@ -363,7 +336,7 @@ void selectSymptoms(User *u) {
         if (choice == MAX_SYMPTOMS + 1) {
             printf("Enter other symptom: ");
             fgets(temp, sizeof(temp), stdin);
-            temp[strcspn(temp, "\n")] = 0;
+            removeNewline(temp);
         } else if (choice >= 1 && choice <= MAX_SYMPTOMS) {
             strcpy(temp, symptomsList[choice - 1]);
         } else {
@@ -376,56 +349,64 @@ void selectSymptoms(User *u) {
     }
 }
 
-void collectPatientInfo(User *u) {
+void collectPatientInfo(User *u, int patientType) {
     int choice, done = 0;
-    u.patID = unique_IDGen();
+    u->patID = unique_IDGen();
     strcpy(u->date, currentDate());
     getRandomLabTestsString(u->patBilling.billBreakdown, &u->patBilling.paymentAmount);
     getRandomDepartment(u->patDepartment, u->patAssignedDoctor);
 
     printf("Enter patient name: ");
     fgets(u->patName, sizeof(u->patName), stdin);
-    u->patName[strcspn(u->patName, "\n")] = 0;
+    removeNewline(u->patName);
 
     printf("Enter patient age: ");
     fgets(u->patAge, sizeof(u->patAge), stdin);
-    u->patAge[strcspn(u->patAge, "\n")] = 0;
+    removeNewline(u->patAge);
 
     printf("Enter date of birth (DD/MM/YYYY): ");
     fgets(u->patDOB, sizeof(u->patDOB), stdin);
-    u->patDOB[strcspn(u->patDOB, "\n")] = 0;
+    removeNewline(u->patDOB);
 
     printf("Enter sex (M/F): ");
     fgets(u->patSex, sizeof(u->patSex), stdin);
-    u->patSex[strcspn(u->patSex, "\n")] = 0;
+    removeNewline(u->patSex);
 
     printf("Enter contact number: ");
     fgets(u->patContactNumber, sizeof(u->patContactNumber), stdin);
-    u->patContactNumber[strcspn(u->patContactNumber, "\n")] = 0;
+    removeNewline(u->patContactNumber);
 
     printf("Enter full address: ");
     fgets(u->patFullAddress, sizeof(u->patFullAddress), stdin);
-    u->patFullAddress[strcspn(u->patFullAddress, "\n")] = 0;
+    removeNewline(u->patFullAddress);   
 
     printf("Is the patient a Senior Citizen or PWD? (yes/no): ");
     fgets(u->isSeniorOrPwd, sizeof(u->isSeniorOrPwd), stdin);
-    u->isSeniorOrPwd[strcspn(u->isSeniorOrPwd, "\n")] = 0;
+    removeNewline(u->isSeniorOrPwd);
 
     selectHMO(u);
     selectPayment(u);
-    selectRoom(u);
+    if (patientType == 1) {
+        selectRoom(u);
+        printf("Enter number of days of stay: ");
+        fgets(u->patDaysofStay, sizeof(u->patDaysofStay), stdin);
+        removeNewline(u->patDaysofStay);
+    } else {
+        strcpy(u->hospitalRooms.roomType, "N/A");
+        strcpy(u->patDaysofStay, "0");
+    }
     selectSymptoms(u);
 
     do {
         printf("\n--- Review Patient Information ---\n");
         printf("Name: %s\nAge: %s\nDOB: %s\nSex: %s\nContact: %s\nAddress: %s\n",
                u->patName, u->patAge, u->patDOB, u->patSex, u->patContactNumber, u->patFullAddress);
-        printf("Senior/PWD: %s\nHMO: %s\nPayment Method: %s\nRoom: %s\nSymptoms: %s\n",
-               u->isSeniorOrPwd, u->patHMO, u->patBilling.paymentMode, u->hospitalRooms.roomType, u->patSymptoms);
+        printf("Senior/PWD: %s\nHMO: %s\nPayment Method: %s\nRoom: %s\nDays of Stay: %s\nSymptoms: %s\n",
+               u->isSeniorOrPwd, u->patHMO, u->patBilling.paymentMode, u->hospitalRooms.roomType, u-> patDaysofStay, u->patSymptoms);
 
         printf("\nConfirm info? (1-Yes / 2-Edit): ");
         scanf("%d", &choice);
-        getchar();
+        clearInputBuffer();
 
         if (choice == 2) {
             printf("\nSelect what to edit:\n");
@@ -433,7 +414,7 @@ void collectPatientInfo(User *u) {
             printf("7. Senior/PWD\n8. HMO\n9. Payment Method\n10. Room\n11. Symptoms\n");
             printf("Choice: ");
             scanf("%d", &choice);
-            getchar();
+            clearInputBuffer();
 
             switch (choice) {
                 case 1: printf("Enter new name: "); fgets(u->patName, sizeof(u->patName), stdin); break;
@@ -445,198 +426,223 @@ void collectPatientInfo(User *u) {
                 case 7: printf("Enter Senior/PWD status: "); fgets(u->isSeniorOrPwd, sizeof(u->isSeniorOrPwd), stdin); break;
                 case 8: selectHMO(u); break;
                 case 9: selectPayment(u); break;
-                case 10: selectRoom(u); break;
+                case 10: if (patientType == 1) {selectRoom(u); printf("Enter number of days of stay: "); fgets(u->patDaysofStay, sizeof(u->patDaysofStay), stdin); removeNewline(u->patDaysofStay);} else {printf("Invalid choice.\n"); } break;
+
                 case 11: selectSymptoms(u); break;
                 default: printf("Invalid choice.\n"); continue;
             }
 
-            u->patName[strcspn(u->patName, "\n")] = 0;
-            u->patAge[strcspn(u->patAge, "\n")] = 0;
-            u->patDOB[strcspn(u->patDOB, "\n")] = 0;
-            u->patSex[strcspn(u->patSex, "\n")] = 0;
-            u->patContactNumber[strcspn(u->patContactNumber, "\n")] = 0;
-            u->patFullAddress[strcspn(u->patFullAddress, "\n")] = 0;
-            u->isSeniorOrPwd[strcspn(u->isSeniorOrPwd, "\n")] = 0;
+            removeNewline(u->patName);
+            removeNewline(u->patAge);
+            removeNewline(u->patDOB);
+            removeNewline(u->patSex);
+            removeNewline(u->patContactNumber);
+            removeNewline(u->patFullAddress);
+            removeNewline(u->isSeniorOrPwd);
         } else {
             done = 1;
         }
     } while (!done);
 }
 
-
-void generateAndPrintBill(User *u)
+void billingCalculate(User *u, int patientType)
 {
-    int roomCost = 0;
+    float labTotal = 0;
+    float roomCost = 0;
+    float subtotal, coveredByHMO = 0, patientPays, totalDue;
 
-    // Find the selected room’s cost
-    for (int i = 0; i < 6; i++) {
-        if (strcmp(u->hospitalRooms.roomType, hospitalRooms[i].roomType) == 0) {
-            roomCost = hospitalRooms[i].roomPrice;
-            break;
+    if (patientType == 1) {
+        for (int i = 0; i < 6; i++) {
+            if (strcmp(u->hospitalRooms.roomType, hospitalRooms[i].roomType) == 0) {
+                roomCost = hospitalRooms[i].roomPrice * atoi(u->patDaysofStay);
+                break;
+            }
         }
     }
 
-    float totalCost = roomCost + u->patBilling.paymentAmount;
-    float discount = 0.0, hmoCoverage = 0.0, amountDue = 0.0;
+    printf("\n===============================================\n");
+    printf("             Makulay General Hospital\n");
+    printf("               Levitown, Lipa City\n");
+    printf("       Tel: (02) 8123-4567 | TIN: 004-567-890\n");
+    printf("===============================================\n");
+    printf("Patient Name: %s\n", u->patName);
+    printf("Patient ID  : %d\n", u->patID);
+    printf("Date        : %s\n", u->date);
+    printf("Payment Mode: %s\n", u->patBilling.paymentMode);
+    printf("===============================================\n");
 
-    // Apply senior/PWD discount
-    if (strcasecmp(u->isSeniorOrPwd, "yes") == 0)
-        discount = 0.20 * totalCost;
+    printf("Lab Tests:\n");
+    printf("%-35s %10s\n", "Test Name", "Price(₱)");
+    printf("-----------------------------------------------\n");
 
-    // Apply HMO coverage if any HMO selected
-    if (strcmp(u->patHMO, "None") != 0)
-        hmoCoverage = 0.60 * (totalCost - discount);
+    char temp[200];
+    char *token = strtok(u->patBilling.billBreakdown, "+");
+    while (token != NULL) {
+        for (int i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+            if (strcmp(token, tests[i].labTests) == 0) {
+                printf("%-35s %10.2f\n", tests[i].labTests, (float)tests[i].prices);
+                labTotal += tests[i].prices;
+                break;
+            }
+        }
+        token = strtok(NULL, "+");
+    }
 
-    amountDue = totalCost - discount - hmoCoverage;
+    if (patientType == 1) {
+        printf("\nRoom Charges:\n");
+        printf("%-35s %10s\n", "Room Type (Days)", "Cost(₱)");
+        printf("-----------------------------------------------\n");
+        printf("%-25s (%s days) %10.2f\n", u->hospitalRooms.roomType, u->patDaysofStay, roomCost);
+    }
 
-    // Save to struct
-    u->patBilling.paymentAmount = (int)amountDue;
-    sprintf(u->patBilling.billBreakdown,
-            "Room: %s (₱%d)\n"
-            "Lab Tests: %s (₱%d)\n"
-            "Discount: ₱%.2f\n"
-            "HMO (60%%): ₱%.2f\n"
-            "Total Due: ₱%.2f\n",
-            u->hospitalRooms.roomType, roomCost,
-            u->patLab.labTests, u->patLab.labCost,
-            discount, hmoCoverage, amountDue);
+    subtotal = labTotal + roomCost;
 
-    // Print final receipt
-    printf("\n================================================\n");
-    printf("              Makulay General Hospital\n");
-    printf("                 Lipa City, Batangas\n");
-    printf("================================================\n");
-    printf("Date/Time:        %s\n", u->date);
-    printf("Patient Name:     %s\n", u->patName);
-    printf("Patient ID:       %d\n", u->patID);
-    printf("Department:       %s\n", u->patDepartment);
-    printf("Assigned Doctor:  %s\n", u->patAssignedDoctor);
-    printf("HMO:              %s\n", u->patHMO);
-    printf("Senior/PWD:       %s\n", u->isSeniorOrPwd);
-    printf("------------------------------------------------\n");
-    printf("%s", u->patBilling.billBreakdown);
-    printf("Payment Method:   %s\n", u->patBilling.paymentMode);
-    printf("================================================\n");
-    printf("   Thank you for trusting Makulay General Hospital!\n");
-    printf("================================================\n\n");
+    if (strcmp(u->patHMO, "None") != 0) {
+        coveredByHMO = subtotal * 0.60;
+        patientPays = subtotal * 0.40;
+    } else {
+        patientPays = subtotal;
+    }
+
+    if (strcasecmp(u->isSeniorOrPwd, "yes") == 0) {
+        patientPays *= 0.80;
+    }
+
+    totalDue = patientPays;
+    u->patBilling.paymentAmount = (int)totalDue;
+
+    printf("\nSummary:\n");
+    printf("%-35s %10.2f\n", "Subtotal", subtotal);
+    printf("%-35s %10.2f\n", "Covered by HMO", coveredByHMO);
+    printf("%-35s %10s\n", "Discounts Applied", strcasecmp(u->isSeniorOrPwd, "yes") == 0 ? "Senior/PWD (20%)" : "None");
+    printf("%-35s %10.2f\n", "TOTAL DUE", totalDue);
+    printf("===============================================\n\n");
+    printf("     Thank you for trusting Makulay GH!\n");
+    printf("    Wishing you a speedy recovery and health.\n");
+    printf("===============================================\n\n");
+}
+
+void viewRecords(char *fileName)
+{
+    int patientType = (strcmp(fileName, "inpatient") == 0) ? 1 : 2;
+    User *records = patReadData(fileName);
+    if (records == NULL) {
+        printf("No records found or error reading file.\n");
+        return;
+    }
+
+    int totalRecords = sizeof(records) / sizeof(records[0]);
+
+    printf("\n==============================================================\n");
+    printf(patientType == 1 ? "                 Inpatient Records\n" : "                 Outpatient Records\n");
+    printf("==============================================================\n");
+
+    printf("| %-7s | %-15s | %-3s | %-3s | %-10s | %-12s | %-4s | %-10s |\n",
+           "ID", "Name", "Age", "Sex", "HMO", "Room", "Days", "Total(₱)");
+    printf("|---------|-----------------|-----|-----|------------|--------------|------|------------|\n");
+
+    for (int i = 0; i < totalRecords; i++) 
+    {
+        char name[16]; strncpy(name, records[i].patName, 15); name[15] = '\0';
+        char hmo[11]; strncpy(hmo, records[i].patHMO, 10); hmo[10] = '\0';
+        char room[13]; strncpy(room, patientType == 1 ? records[i].hospitalRooms.roomType : "N/A", 12); room[12] = '\0';
+
+        printf("| %-7d | %-15s | %-3s | %-3s | %-10s | %-12s | %-4s | %-10d |\n",
+               records[i].patID,
+               name,
+               records[i].patAge,
+               records[i].patSex,
+               hmo,
+               room,
+               patientType == 1 ? records[i].patDaysofStay : "0",
+               records[i].patBilling.paymentAmount);
+    }
+
+    printf("==============================================================\n\n");
+    free(records);
+
 }
 
 
-// void printTable(int choice) //tentative
-// {
-//     User *records = patReadData(choice);
-//     if (records == NULL)
-//     {
-//         printf("\nNo records found.\n");
-//         return;
-//     }
-//      FILE *patRecords;
-//     if (choice == 1)
-//     {
-//         patRecords = fopen("inpatientRecords.bin", "rb");
-//         if (patRecords == NULL)
-//         {
-//             printf("\nNo records found.\n");
-//             return;
-//         }
-//     }
-
-//     if (choice == 2)
-//     {
-//         patRecords = fopen("outpatientRecords.bin", "rb");
-//         if (patRecords == NULL)
-//         {
-//             printf("\nNo records found.\n");
-//             return;
-//         }
-//     }
-
-//     fseek(patRecords, 0, SEEK_END);
-//     int fileSize = ftell(patRecords);
-//     fseek(patRecords, 0, SEEK_SET);
-
-//     int recordTotal = fileSize / sizeof(User);
-
-//     printf("\n---------------------------------------------------------------------------------------------------------------\n");
-//     for (int i = 0; i < recordTotal + 1; i++)
-//     {
-//         User u;
-//         if (fread(&u, sizeof(User), 1, patRecords) != 1) break;
-
-//         printf("| ID: %d | Name: %s | DOB: %s | Contact: %s | Sex: %s | Address: %s | Height: %s | Weight: %s | Diagnosis: %s | Facility: %s | Payment Mode: %s | Payment Amount: %d |\n",
-//                u.patID, u.patName, u.patDOB, u.patContactNumber, u.patSex, u.patFullAddress,
-//                u.patHeight, u.patWeight, u.patDiagnosis, u.patFacility, u.patModeofPayment, u.patPaymentAmount);
-//     }
-//     printf("---------------------------------------------------------------------------------------------------------------\n");
-//     fclose(patRecords);
-//     free(records);
-// }
-
-
-int menu()
+void menu()
     {
         int choice;
+        do
+        {
+        printf("==============================================\n");
+        printf("  __  __    _    _  ___   _ _        _ __   __\n");
+        printf(" |  \\/  |  / \\  | |/ / | | | |      / \\\\ \\ / /\n");
+        printf(" | |\\/| | / _ \\ | ' /| | | | |     / _ \\\\ V / \n");
+        printf(" | |  | |/ ___ \\| . \\| |_| | |___ / ___ \\| |  \n");
+        printf(" |_|  |_/_/   \\_\\_|\\_\\\\___/|_____/_/   \\_\\_|  \n");
+        printf("                                              \n");
+        printf("==============================================\n");
+        printf("      Welcome to Makulay General Hospital\n");
+        printf("             Levitown, Lipa City\n");
+        printf("       Tel: (02) 8123-4567 | TIN: 004-567-890\n");
+        printf("==============================================\n");
+        printf("               Main Menu\n");
         printf("\n1. Inpatient Registration\n");
         printf("2. Outpatient Registration\n");
         printf("3. View Records\n");
         printf("4. Exit\n\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
-        return choice;
+        clearInputBuffer();
+
+        if (choice == 1)
+        {
+            User inpatient;
+            collectPatientInfo(&inpatient, 1);
+            billingCalculate(&inpatient, 1);
+            patWriteData(inpatient, "inpatient");;
+        }
+        else if (choice == 2)
+        {
+            User outpatient;
+            collectPatientInfo(&outpatient, 2);
+            billingCalculate(&outpatient, 2);
+            patWriteData(outpatient, "outpatient");
+        }
+        else if (choice == 3)
+        {
+            int viewChoice;
+            do {
+                printf("\n 1. View Inpatient Records\n");
+                printf(" 2. View Outpatient Records\n");
+                printf(" 3. Back to Main Menu\n");
+                printf(" Enter your choice: ");
+                scanf("%d", &viewChoice);
+                clearInputBuffer();
+
+                switch(viewChoice) {
+                    case 1: viewRecords("inpatient"); break;
+                    case 2: viewRecords("outpatient"); break;
+                    case 3: break; 
+                    default: printf("Invalid choice.\n"); break;
+                }
+
+            } while (viewChoice != 3);
+
+        }
+        else if (choice == 4)
+        {
+            printf("Exiting the program. Goodbye!\n");
+            exit(0);
+        }
+        else
+        {
+            printf("Invalid choice. Please try again.\n");
+
+
+        } 
+        }while (choice < 1 || choice > 3);
+
     }
 
 int main()
 {
-    User buffer;
-
-
-    while(1)
-    {
-        int choice = menu();
-        if (choice == 1 || choice == 2)
-        {
-            buffer = inputUserData();
-            if (patWriteData(buffer, choice))
-            {
-                printf("\nPatient registered successfully with ID: %d\n", buffer.patID);
-                printReceipt(buffer);
-            }
-            else
-            {
-                printf("\nError registering patient.\n");
-            }
-        }
-
-        if (choice == 3)
-        {
-            int viewChoice;
-            printf("\nView Records:\n");
-            printf("1. Inpatient Records\n");
-            printf("2. Outpatient Records\n");
-            printf("Enter your choice: ");
-            scanf("%d", &viewChoice);
-
-            if (viewChoice == 1 || viewChoice == 2)
-            {
-                // printTable(viewChoice);
-                break;  
-            }
-            else
-            {
-                printf("\nInvalid choice. Please try again.\n");
-            }
-        }
-
-        if (choice == 4)
-        {
-            break;
-        }
-
-        else if (choice < 1 || choice > 3)
-        {
-            printf("\nInvalid choice. Please try again.\n");
-        }
-
-    }
+    menu();
     return 0;
+    
 }
