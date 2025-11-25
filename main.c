@@ -237,7 +237,7 @@ User *patReadData(char *fileName)
     size_t structType;
     if (strcmp(fileName, "outpatient") == 0)
     {
-        patRecords = fopen("outpatientRecords.bin", "ab");
+        patRecords = fopen("outpatientRecords.bin", "rb");
         structType = sizeof(User);
 
         if (patRecords == NULL) return NULL;
@@ -245,7 +245,7 @@ User *patReadData(char *fileName)
 
        if (strcmp(fileName, "inpatient") == 0)
     {
-        patRecords = fopen("inpatientRecords.bin", "ab");
+        patRecords = fopen("inpatientRecords.bin", "rb");
         structType = sizeof(User);
         
         if (patRecords == NULL) return NULL;
@@ -468,6 +468,8 @@ void billingCalculate(User *u, int patientType)
     printf("Patient Name: %s\n", u->patName);
     printf("Patient ID  : %d\n", u->patID);
     printf("Date        : %s\n", u->date);
+    printf("Assigned Doctor: %s\n", u->patAssignedDoctor);
+    printf("Department: %s\n", u->patDepartment);
     printf("Payment Mode: %s\n", u->patBilling.paymentMode);
     printf("===============================================\n");
 
@@ -636,13 +638,19 @@ void menu()
 
 
         } 
-        }while (choice < 1 || choice > 3);
+        }while (choice != 4);
 
     }
 
 int main()
 {
-    menu();
+    // menu();
+    User *testpatient = patReadData("inpatient");
+    printf("%d\n", testpatient[0].patID);
+
+
+    free(testpatient);
+
     return 0;
     
 }
