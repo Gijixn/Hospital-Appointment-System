@@ -378,7 +378,7 @@ void selectSymptoms(User *u) {
 
 void collectPatientInfo(User *u) {
     int choice, done = 0;
-    u.patID = unique_IDGen();
+    u.patID -> unique_IDGen();
     strcpy(u->date, currentDate());
     getRandomLabTestsString(u->patBilling.billBreakdown, &u->patBilling.paymentAmount);
     getRandomDepartment(u->patDepartment, u->patAssignedDoctor);
@@ -498,7 +498,7 @@ void generateAndPrintBill(User *u)
             "HMO (60%%): ₱%.2f\n"
             "Total Due: ₱%.2f\n",
             u->hospitalRooms.roomType, roomCost,
-            u->patLab.labTests, u->patLab.labCost,
+            u->patBilling.billBreakdown, u->patBilling.paymentAmount,
             discount, hmoCoverage, amountDue);
 
     // Print final receipt
