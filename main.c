@@ -5,7 +5,6 @@
 #include <time.h>
 #include <ctype.h>
 
-
 #define MAX_SYMPTOMS 10
 
 typedef struct
@@ -61,7 +60,7 @@ room hospitalRooms[] = {
 };
 
 typedef struct
-{  
+{
     char billBreakdown[200];
     char paymentMode[50];
     int paymentTotal;
@@ -129,12 +128,12 @@ int idCheck(const char *filename, int id)
         if (temp.patID == id)
         {
             fclose(file);
-            return 1; 
+            return 1;
         }
     }
 
     fclose(file);
-    return 0; 
+    return 0;
 }
 
 int unique_IDGen(void)
@@ -144,14 +143,14 @@ int unique_IDGen(void)
 
     while(1)
     {
-        id = rand() % 9000000 + 1000000; 
+        id = rand() % 9000000 + 1000000;
 
         if (!idCheck("inpatientRecords.bin", id) && !idCheck("outpatientRecords.bin", id))
         {
             return id;
         }
     }
-    
+
 }
 
 void getRandomDepartment(char *departmentName, char *doctorName)
@@ -172,7 +171,7 @@ void getRandomLabTestsString(char *result, int *totalPrice) {
 
     strcat(result, "Health Consultation");
     *totalPrice += tests[numTests - 1].prices;
-    used[numTests - 1] = 1; 
+    used[numTests - 1] = 1;
 
     int additional = rand() % 3;
 
@@ -183,7 +182,7 @@ void getRandomLabTestsString(char *result, int *totalPrice) {
             idx = rand() % (numTests - 1);
         } while (used[idx]);
 
-        used[idx] = 1; 
+        used[idx] = 1;
 
         strcat(result, "+");
         strcat(result, tests[idx].labTests);
@@ -196,7 +195,7 @@ const char *currentDate(void)
 {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
-    static char dateStr[20]; 
+    static char dateStr[20];
     strftime(dateStr, sizeof(dateStr), "%H:%M-%m/%d/%Y", t);
     return dateStr;
 }
@@ -217,7 +216,7 @@ bool patWriteData(User data, char *fileName)
     {
         patRecords = fopen("inpatientRecords.bin", "ab");
         structType = sizeof(User);
-        
+
         if (patRecords == NULL) return false;
 
     }
@@ -251,11 +250,11 @@ User *patReadData(char *fileName)
     {
         patRecords = fopen("inpatientRecords.bin", "rb");
         structType = sizeof(User);
-        
+
         if (patRecords == NULL) return NULL;
 
     }
-    
+
     else {
         printf("Invalid Choice\n");
         return NULL;
@@ -272,7 +271,7 @@ User *patReadData(char *fileName)
     if (fread(bufferRead, structType, recordTotal, patRecords) != 1) return NULL;
 
     if (fclose(patRecords)  == EOF) return NULL;
-    
+
     return(bufferRead);
 
 }
@@ -411,7 +410,7 @@ void readYesNo(const char *prompt, char *buffer, int size) {
 
 void collectPatientInfo(User *u, int patientType) {
     int choice, done = 0;
-    char tmp[10]; 
+    char tmp[10];
 
     u->patID = unique_IDGen();
     strcpy(u->date, currentDate());
@@ -561,8 +560,6 @@ void billingCalculate(User *u, int patientType)
     printf("===============================================\n\n");
 }
 
-/* ------------------ Add these functions to your program ------------------ */
-
 void removePatientRecord(int patID, int patientType)
 {
     const char *fileName = (patientType == 1) ? "inpatientRecords.bin" : "outpatientRecords.bin";
@@ -570,7 +567,6 @@ void removePatientRecord(int patID, int patientType)
 
     FILE *src = fopen(fileName, "rb");
     if (!src) {
-        // nothing to remove
         return;
     }
 
@@ -600,7 +596,7 @@ void removePatientRecord(int patID, int patientType)
 bool updatePatientRecordPayment(User *u, int patientType)
 {
     const char *fileName = (patientType == 1) ? "inpatientRecords.bin" : "outpatientRecords.bin";
-    FILE *f = fopen(fileName, "r+b"); 
+    FILE *f = fopen(fileName, "r+b");
     if (!f) return false;
 
     User buf;
@@ -628,7 +624,7 @@ void printReceipt(User *u, int patientType)
     if (!u) return;
 
     int payment = 0;
-    int minPartial = (u->patBilling.paymentTotal * 20) / 100; // 20% minimum
+    int minPartial = (u->patBilling.paymentTotal * 20) / 100;
 
     printf("\n===== PAYMENT PROCESSING =====\n");
     printf("Patient: %s (ID: %d)\n", u->patName, u->patID);
@@ -661,7 +657,7 @@ void printReceipt(User *u, int patientType)
         if (u->patBilling.balance > 0) {
             printf("\nPartial payment accepted.\n");
         } else {
-            u->patBilling.balance = 0; // full payment
+            u->patBilling.balance = 0;
             printf("\nFull payment complete!\n");
         }
 
@@ -733,7 +729,7 @@ void viewRecords(char *fileName)
            "ID", "Name", "Age", "Sex", "HMO", "Room", "Days", "Balance(₱)");
     printf("|---------|-----------------|-----|-----|------------|--------------|------|------------|\n");
 
-    for (int i = 0; i < totalRecords; i++) 
+    for (int i = 0; i < totalRecords; i++)
     {
         char name[16]; strncpy(name, records[i].patName, 15); name[15] = '\0';
         char hmo[11]; strncpy(hmo, records[i].patHMO, 10); hmo[10] = '\0';
@@ -889,7 +885,7 @@ void repayBalance(int patientType) {
     }
 
     printf("Outstanding balance: ₱%d\n", buf.patBilling.balance);
-    int minPayment = buf.patBilling.paymentTotal * 0.2; 
+    int minPayment = buf.patBilling.paymentTotal * 0.2;
     printf("Minimum payment required: ₱%d\n", minPayment);
 
     selectPayment(&buf);
@@ -980,8 +976,8 @@ void menu()
             printf("==============================================\n");
             collectPatientInfo(&inpatient, 1);
             billingCalculate(&inpatient, 1);
-            printReceipt(&inpatient, 1);              
-            patWriteData(inpatient, "inpatient"); 
+            printReceipt(&inpatient, 1);
+            patWriteData(inpatient, "inpatient");
         }
 
         else if (choice == 2)
@@ -990,7 +986,7 @@ void menu()
             printf("==============================================\n");
             collectPatientInfo(&outpatient, 2);
             billingCalculate(&outpatient, 2);
-            printReceipt(&outpatient, 2);              
+            printReceipt(&outpatient, 2);
             patWriteData(outpatient, "outpatient");
         }
         else if (choice == 3)
@@ -1007,7 +1003,7 @@ void menu()
                 switch(viewChoice) {
                     case 1: viewRecords("inpatient");  viewUserRecord("inpatient"); break;
                     case 2: viewRecords("outpatient");  viewUserRecord("outpatient"); break;
-                    case 3: break; 
+                    case 3: break;
                     default: printf("Invalid choice.\n"); break;
                 }
 
@@ -1028,7 +1024,7 @@ void menu()
                 switch(balChoice) {
                     case 1: repayBalance(1); break;
                     case 2: repayBalance(2); break;
-                    case 3: break; 
+                    case 3: break;
                     default: printf("Invalid choice.\n"); break;
                 }
 
@@ -1045,7 +1041,7 @@ void menu()
             printf("Invalid choice. Please try again.\n");
 
 
-        } 
+        }
         }while (choice != 5);
 
     }
@@ -1055,5 +1051,5 @@ int main()
     menu();
 
     return 0;
-    
+
 }
