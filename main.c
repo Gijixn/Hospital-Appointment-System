@@ -287,7 +287,7 @@ void removeNewline(char *str) {
 
 void selectHMO(User *u) {
     int choice;
-    printf("\nSelect HMO:\n");
+    printf("\nSelect HMO (HMOs covers 60%% of total payment):\n");
     for (int i = 0; i < 5; i++)
         printf("%d. %s\n", i + 1, hmoList[i]);
     printf("Choice: ");
