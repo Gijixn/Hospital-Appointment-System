@@ -84,7 +84,7 @@ const char *symptomsList[] = {
 const char *paymentMethods[] =  {
     "Cash",
     "Card",
-    "Online",
+    "Online Payment",
     "Cheque"
 };
 
@@ -311,6 +311,18 @@ void selectPayment(User *u) {
 
 void selectRoom(User *u) {
     int choice;
+    printf("===============================================\n");
+    printf("               ROOM PRICE TABLE                \n");
+    printf("===============================================\n");
+    printf("Room Type                 | Price (per day)\n");
+    printf("===============================================\n");
+    printf("General Ward              | ₱2000.00\n");
+    printf("Semi-Private Room         | ₱4000.00\n");
+    printf("Private Room              | ₱6000.00\n");
+    printf("ICU                       | ₱10000.00\n");
+    printf("Maternity Ward            | ₱5000.00\n");
+    printf("===============================================\n");
+
     printf("\nSelect Room Type:\n");
     for (int i = 0; i < 6; i++)
         printf("%d. %s\n", i + 1, hospitalRooms[i].roomType);
