@@ -481,8 +481,8 @@ void collectPatientInfo(User *u, int patientType) {
                             printf("Invalid choice.\n");
                         }
                         break;
-                case 10: selectHMO(u);
-                case 11: selectPayment(u);
+                case 10: selectHMO(u); break;
+                case 11: selectPayment(u); break;
                 default: printf("Invalid choice.\n"); continue;
             }
         } else if (choice == 1) {
