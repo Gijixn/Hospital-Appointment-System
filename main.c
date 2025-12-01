@@ -1,3 +1,5 @@
+
+// Required standard libraries for this program to run
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -5,8 +7,10 @@
 #include <time.h>
 #include <ctype.h>
 
+// Max amount of sympotms that can be chosen
 #define MAX_SYMPTOMS 10
 
+// Structs for Hospital Departments with Doctors assigned
 typedef struct
 {
     char name[50];
@@ -22,6 +26,7 @@ department  departments[] = {
     {"Laboratory", {"Dr. Adams", "Dr. Nelson", "Dr. Baker"}}
 };
 
+// Lab tests and prices
 typedef struct
 {
     char labTests[50];
@@ -44,6 +49,7 @@ labTests tests[] = {
     {"Health Consultation", 500},
 };
 
+// Rooms and their prices for inpatients
 typedef struct
 {
     char roomType[50];
@@ -68,6 +74,7 @@ typedef struct
     int balance;
 } billing;
 
+//Common symptoms to be chosen from
 const char *symptomsList[] = {
     "Fever",
     "Cough",
@@ -81,6 +88,7 @@ const char *symptomsList[] = {
     "Sore Throat"
 };
 
+// struct for available payment methods
 const char *paymentMethods[] =  {
     "Cash",
     "Card",
@@ -88,6 +96,7 @@ const char *paymentMethods[] =  {
     "Cheque"
 };
 
+// structs for available HMOs
 const char *hmoList[] = {
     "None",
     "Maxicare",
@@ -96,6 +105,7 @@ const char *hmoList[] = {
     "PhilCare"
 };
 
+// The main struct that stores a patient's info, from billing to health info
 typedef struct
     {
         int patID;
@@ -117,6 +127,7 @@ typedef struct
     } User;
 
 
+// This function checks compares each id in a file with the newly generated to id to check for duplicates
 int idCheck(const char *filename, int id)
 {
     FILE *file = fopen(filename, "rb");
@@ -136,6 +147,7 @@ int idCheck(const char *filename, int id)
     return 0;
 }
 
+// main function that generates a unique 7-digit id
 int unique_IDGen(void)
 {
     int id;
@@ -153,6 +165,7 @@ int unique_IDGen(void)
 
 }
 
+// Function that randomly chooses a Doctor and assigns a random doctor to the patient
 void getRandomDepartment(char *departmentName, char *doctorName)
 {
     int numDepartments = sizeof(departments) / sizeof(departments[0]);
@@ -163,6 +176,7 @@ void getRandomDepartment(char *departmentName, char *doctorName)
     strcpy(doctorName, departments[deptIndex].doctors[docIndex]);
 }
 
+//Functions that assigns random lab tests that would reach up to 3 tests and stores it in the main struct. Health Consultation is always concluded
 void getRandomLabTestsString(char *result, int *totalPrice) {
     int numTests = sizeof(tests) / sizeof(tests[0]);
     int used[20] = {0};
@@ -190,7 +204,7 @@ void getRandomLabTestsString(char *result, int *totalPrice) {
     }
 }
 
-
+//gets the current date in a 24-hour time : minutes – month/day/year format
 const char *currentDate(void)
 {
     time_t now = time(NULL);
@@ -200,6 +214,7 @@ const char *currentDate(void)
     return dateStr;
 }
 
+// function responsible for saving the user's whole temporary record to a file
 bool patWriteData(User data, char *fileName)
 {
     FILE *patRecords;
@@ -234,6 +249,7 @@ bool patWriteData(User data, char *fileName)
 
 }
 
+// function responsible for reading the whole file to take the patient's records
 User *patReadData(char *fileName)
 {
     FILE *patRecords;
@@ -276,15 +292,18 @@ User *patReadData(char *fileName)
 
 }
 
+//helpful function that removes characters left in the buffer
 void clearInputBuffer(void) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
+//Similar to the function above, it helps in clearing the buffer
 void removeNewline(char *str) {
     str[strcspn(str, "\n")] = '\0';
 }
 
+//a function that interacts with the HMO struct and allows the user to choose the HMO they have
 void selectHMO(User *u) {
     int choice;
     printf("\nSelect HMO (HMOs covers 60%% of total payment):\n");
@@ -297,6 +316,7 @@ void selectHMO(User *u) {
         strcpy(u->patHMO, hmoList[choice - 1]);
 }
 
+//a function that interacts with the payment struct and allows the user to choose their payment method
 void selectPayment(User *u) {
     int choice;
     printf("\nSelect Payment Method:\n");
@@ -309,6 +329,7 @@ void selectPayment(User *u) {
         strcpy(u->patBilling.paymentMode, paymentMethods[choice - 1]);
 }
 
+//a function that interacts with the room struct and allows the user to choose their room
 void selectRoom(User *u) {
     int choice;
     printf("===============================================\n");
@@ -333,6 +354,7 @@ void selectRoom(User *u) {
         strcpy(u->hospitalRooms.roomType, hospitalRooms[choice - 1].roomType);
 }
 
+//a function that notes the symptoms that are common and a provided "others" as an option for specific symptoms
 void selectSymptoms(User *u) {
     int choice;
     char temp[200];
@@ -364,6 +386,8 @@ void selectSymptoms(User *u) {
     }
 }
 
+//---------------------------------------------------------------------
+// read funcs are there for error handling purposes such as invalid inputs
 void readString(const char *prompt, char *buffer, int size) {
     do {
         printf("%s", prompt);
@@ -418,8 +442,10 @@ void readYesNo(const char *prompt, char *buffer, int size) {
         } else break;
     } while (1);
 }
+//--------------------------------------------------------------------------
 
 
+// the main func that contains all the prompts and billing methods for the patient
 void collectPatientInfo(User *u, int patientType) {
     int choice, done = 0;
     char tmp[10];
@@ -493,13 +519,13 @@ void collectPatientInfo(User *u, int patientType) {
     } while (!done);
 }
 
-
+// this generates the billing summary and responsible for calculating the total price
 void billingCalculate(User *u, int patientType)
 {
     float labTotal = 0;
     float roomCost = 0;
     float subtotal, coveredByHMO = 0, patientPays, totalDue;
-
+    // fetches the room prices and multiplies it to the days of stay
     if (patientType == 1) {
         for (int i = 0; i < 6; i++) {
             if (strcmp(u->hospitalRooms.roomType, hospitalRooms[i].roomType) == 0) {
@@ -572,39 +598,7 @@ void billingCalculate(User *u, int patientType)
     printf("===============================================\n\n");
 }
 
-void removePatientRecord(int patID, int patientType)
-{
-    const char *fileName = (patientType == 1) ? "inpatientRecords.bin" : "outpatientRecords.bin";
-    const char *tempName = "temp_records.bin";
-
-    FILE *src = fopen(fileName, "rb");
-    if (!src) {
-        return;
-    }
-
-    FILE *tmp = fopen(tempName, "wb");
-    if (!tmp) {
-        fclose(src);
-        return;
-    }
-
-    User buf;
-    while (fread(&buf, sizeof(User), 1, src) == 1) {
-        if (buf.patID != patID) {
-            fwrite(&buf, sizeof(User), 1, tmp);
-        }
-    }
-
-    fclose(src);
-    fclose(tmp);
-
-    if (remove(fileName) != 0) {
-        remove(tempName);
-        return;
-    }
-    rename(tempName, fileName);
-}
-
+//adds new info to the file if any changes happen in the record
 bool updatePatientRecordPayment(User *u, int patientType)
 {
     const char *fileName = (patientType == 1) ? "inpatientRecords.bin" : "outpatientRecords.bin";
@@ -631,6 +625,7 @@ bool updatePatientRecordPayment(User *u, int patientType)
     return found;
 }
 
+//this func that handles the transaction and generates the receipt
 void printReceipt(User *u, int patientType)
 {
     if (!u) return;
@@ -699,7 +694,7 @@ void printReceipt(User *u, int patientType)
 }
 
 
-
+// function that  fetches and displays the table of records in the file
 void viewRecords(char *fileName)
 {
     FILE *patRecords;
@@ -767,6 +762,7 @@ void viewRecords(char *fileName)
     free(records);
 }
 
+// views the full record of a patient by first prompting the patient of their ID
 void viewUserRecord(char *fileName) {
     FILE *patRecords;
     size_t structType = sizeof(User);
@@ -860,6 +856,7 @@ void viewUserRecord(char *fileName) {
     free(records);
 }
 
+//function that deals in transaction when it comes to partial payments
 void repayBalance(int patientType) {
     char date[20];
     strcpy(date, currentDate());
@@ -897,7 +894,7 @@ void repayBalance(int patientType) {
     }
 
     printf("Outstanding balance: ₱%d\n", buf.patBilling.balance);
-    int minPayment = buf.patBilling.paymentTotal * 0.2;
+    int minPayment = buf.patBilling.paymentTotal * 0.2; //20% of total costs is the minimum
     printf("Minimum payment required: ₱%d\n", minPayment);
 
     selectPayment(&buf);
@@ -954,7 +951,7 @@ void repayBalance(int patientType) {
 
 
 
-
+// displays main menu for the user to interact with
 void menu()
     {
         int choice;
