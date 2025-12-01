@@ -1,4 +1,5 @@
 
+
 // Required standard libraries for this program to run
 #include <stdio.h>
 #include <string.h>
@@ -637,6 +638,7 @@ void printReceipt(User *u, int patientType)
     printf("Patient: %s (ID: %d)\n", u->patName, u->patID);
     printf("Total Amount Due : ₱%d\n", u->patBilling.paymentTotal);
     printf("Payment Method   : %s\n\n", u->patBilling.paymentMode);
+    printf("(Partial payments must be at a minimum 20%% of the total amount)");
 
     while (1)
     {
